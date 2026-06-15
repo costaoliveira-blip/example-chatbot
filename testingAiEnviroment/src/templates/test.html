@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      id="theme"
+      href="{{ url_for('static', filename='css/test.css') }}"
+    />
+    <script
+      defer
+      src="{{ url_for('static', filename='scripts/Main.js') }}"
+    ></script>
+    <title>Test</title>
+  </head>
+  <body>
+    <body>
+    <main class="chat-shell">
+      <header class="chat-header">
+        <div class="titulo-e-mascote">
+          <h1>Ipêzinho</h1>
+          <!-- Uso de url_for para assets estáticos -->
+        </div>
+        <div id="announce">
+          <p>Assistente de suporte CIAR</p>
+        </div>
+      </header>
+
+      <section id="chat" aria-live="polite"></section>
+      <div class="loader"></div>
+
+      <!-- Botão de acessibilidade com imagem externa (mantido) -->
+      <button
+        type="button"
+        class="open-acessibilidade"
+        id="imagem-acessibilidade"
+        onclick="abrirMenuAcessibilidade()"
+      >
+        <img
+          src="https://cdn.userway.org/widgetapp/images/body_wh.svg"
+          alt="Acessibilidade"
+        />
+      </button>
+      <div class="pop-acessibilidade" id="menu-acessibilidade">
+        <div class="inner-pop">
+          <h1><span>Menu de Acessibilidade</span></h1>
+          <button
+            type="button"
+            class="botao-contraste"
+            id="alto-contraste"
+            onclick="trocarTema()"
+          >
+            Ativar/Desativar Alto Contraste
+          </button>
+          <button type="button" class="opcao-acessibilidade" id="opcao-fonte">
+            Ajustar Tamanho da Fonte
+          </button>
+
+          <button
+            type="button"
+            class="fechar-acessibilidade"
+            onclick="fecharMenuAcessibilidade()"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input
+          id="msg"
+          placeholder="Digite sua mensagem..."
+          autocomplete="off"
+          autofocus
+        />
+        <button type="button" onclick="enviar()">Enviar</button>
+      </div>
+    </main>
+  </body>
+</html>

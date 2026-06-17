@@ -62,7 +62,6 @@ def chatbot():
     results = collection.query(query_texts=[pergunta], n_results=3)
     contexto_reduzido = "\n\n---\n\n".join(results["documents"][0])
 
-    # 2. Monta as mensagens com contexto enxuto
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {

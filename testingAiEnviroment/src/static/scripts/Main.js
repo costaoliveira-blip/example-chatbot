@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Estado da sessão — trafega entre frontend e backend
+// Estado da sessão — trafega entre frontend e backend 
 // ---------------------------------------------------------------------------
 let estadoAtual = "inicio";
 let dadosColeta = {};

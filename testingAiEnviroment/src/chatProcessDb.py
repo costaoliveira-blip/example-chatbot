@@ -31,7 +31,7 @@ ESTADOS_SO_NUMERICO = {
     "confirmar_dados",
 }
 
-# Mapeamento de texto livre → número da opção, por estado
+# Mapeamento de texto livre número da opção, por estado
 # Permite que o usuário digite palavras em vez do número
 TEXTO_PARA_OPCAO = {
     "perfil": {
@@ -213,7 +213,7 @@ def classificar_intencao(mensagem: str, estado_atual: str) -> str:
             ]
         )
         resultado = resposta.message.content.strip().lower().replace(" ", "_")
-        print(f"[IA] {estado_atual!r} + {mensagem!r} → {resultado!r}")
+        print(f"[IA] {estado_atual!r} + {mensagem!r} -> {resultado!r}")
         return resultado
     except Exception as e:
         print(f"[IA] Erro: {e}")

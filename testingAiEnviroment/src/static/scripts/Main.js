@@ -1,4 +1,10 @@
 // ---------------------------------------------------------------------------
+// Estado da sessão — trafega entre frontend e backend
+// ---------------------------------------------------------------------------
+let estadoAtual = "inicio";
+let dadosColeta = {};
+
+// ---------------------------------------------------------------------------
 // Utilitários de texto
 // ---------------------------------------------------------------------------
 function escapeHtml(texto) {
@@ -32,18 +38,21 @@ function adicionarMensagem(remetente, texto, classe) {
     const msgHtml = `<div class="msg ${classe}"><strong>${remetente}</strong><br>${conteudo}</div>`;
     chat.innerHTML += msgHtml;
     chat.scrollTop = chat.scrollHeight;
-    return chat.lastElementChild; // retorna o elemento criado
 }
 
-function criarBolhaBot() {
+function adicionarLinkTutorial(url) {
+    if (!url) return;
     const chat = document.getElementById("chat");
-    const el = document.createElement("div");
-    el.className = "msg bot-msg";
-    el.innerHTML = `<strong>IPÊZINHO</strong><br><span class="stream-content"></span>`;
-    chat.appendChild(el);
+    const msgHtml = `
+        <div class="msg bot-msg tutorial-link">
+            <strong>IPÊZINHO</strong><br>
+            🎬 <iframe src="${escapeHtml(url)}" width="400" height="250" title="teste de titulo">
+            </iframe>
+        </div>`;
+    chat.innerHTML += msgHtml;
     chat.scrollTop = chat.scrollHeight;
-    return el.querySelector(".stream-content");
 }
+
 
 function enviar() {
     const input  = document.getElementById("msg");
@@ -54,56 +63,35 @@ function enviar() {
 
     input.value = "";
     input.disabled = true;
-    adicionarMensagem("Você", texto, "user-msg");
     loader.classList.add("active");
 
-    // Cria a bolha do bot vazia — tokens aparecem conforme chegam
-    const streamSpan = criarBolhaBot();
-    let textoAcumulado = "";
+    adicionarMensagem("Você", texto, "user-msg");
 
     fetch("/chatbot/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensagem: texto }),
+        body: JSON.stringify({
+            mensagem: texto,
+            estado: estadoAtual,
+            dados_coleta: dadosColeta,
+        }),
     })
-    .then(response => {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
+    .then(r => r.json())
+    .then(d => {
+        // Atualiza o estado da sessão
+        estadoAtual = d.estado || "inicio";
+        dadosColeta = d.dados_coleta || {};
 
-        function lerChunk() {
-            return reader.read().then(({ done, value }) => {
-                if (done) return;
+        // Exibe a resposta do bot
+        adicionarMensagem("IPÊZINHO", d.resposta || "Sem resposta no momento.", "bot-msg");
 
-                buffer += decoder.decode(value, { stream: true });
-
-                // SSE: cada evento é "data: ...\n\n"
-                const linhas = buffer.split("\n\n");
-                buffer = linhas.pop(); // guarda fragmento incompleto
-
-                for (const linha of linhas) {
-                    if (!linha.startsWith("data:")) continue;
-                    const payload = linha.slice(5).trim();
-                    if (payload === "[DONE]") return;
-
-                    try {
-                        const { token } = JSON.parse(payload);
-                        textoAcumulado += token;
-                        // Renderiza com formatação a cada token
-                        streamSpan.innerHTML = formatarMensagemBot(textoAcumulado);
-                        document.getElementById("chat").scrollTop =
-                            document.getElementById("chat").scrollHeight;
-                    } catch (_) { /* ignora JSON malformado */ }
-                }
-
-                return lerChunk();
-            });
+        // Exibe o link do tutorial se existir
+        if (d.link_tutorial) {
+            adicionarLinkTutorial(d.link_tutorial);
         }
-
-        return lerChunk();
     })
     .catch(() => {
-        streamSpan.innerHTML = "Erro ao conectar com o servidor.";
+        adicionarMensagem("IPÊZINHO", "Erro ao conectar com o servidor.", "bot-msg");
     })
     .finally(() => {
         loader.classList.remove("active");
@@ -119,7 +107,9 @@ document.getElementById("msg").addEventListener("keydown", function (event) {
     }
 });
 
-
+// ---------------------------------------------------------------------------
+// Acessibilidade
+// ---------------------------------------------------------------------------
 function abrirMenuAcessibilidade() {
     document.getElementById("menu-acessibilidade").style.display = "block";
 }
@@ -138,8 +128,11 @@ function trocarTema() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Mensagem de boas-vindas (dispara o primeiro estado automaticamente)
+// ---------------------------------------------------------------------------
 adicionarMensagem(
     "IPÊZINHO",
-    "Olá! Eu sou o IPÊZINHO, assistente virtual do CIAR UFG! 💚\n\nNeste canal irei te ajudar com diversos serviços como suporte em geral, abertura de sala, cadastramento de usuários, agendamento de reuniões e muito mais.",
+    "Olá! Eu sou o IPÊZINHO, assistente virtual do CIAR UFG! 💚\n\nNeste canal irei te ajudar com diversos serviços como suporte em geral, abertura de sala, cadastramento de usuários, agendamento de reuniões e muito mais.\n\nDigite qualquer coisa para começar!",
     "bot-msg"
 );

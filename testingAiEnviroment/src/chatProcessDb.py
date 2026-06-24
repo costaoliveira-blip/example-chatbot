@@ -319,6 +319,9 @@ def processar_mensagem(mensagem: str, estado_atual: str, dados_coleta: dict) -> 
         numero = mensagem.strip()
         if numero in numeros_validos:
             return responder(buscar_proximo_estado(estado_atual, numero))
+        
+        if numero == "0":
+            return responder(buscar_proximo_estado(estado_atual, 0))
         return reexibir(f"Opção '{numero}' inválida. Escolha uma das opções:")
     
     opcao_por_texto = match_texto_opcao(mensagem, estado_atual)

@@ -222,7 +222,7 @@ def classificar_intencao(mensagem: str, estado_atual: str) -> str:
 #Estados que nao passam por reformulação
 ESTADOS_SEM_HUMANIZACAO = ESTADOS_COLETA | {
     "confirmar_dados", "feedback_estrelas", "feedback_mensagem",
-    "feedback_fim", "inicio", "abrir_ticket",
+    "feedback_fim", "inicio", "abrir_ticket", "perfil"
 }
 
 def humanizar_mensagem(mensagem_banco: str, estado: str) -> str:

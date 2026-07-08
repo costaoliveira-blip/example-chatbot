@@ -2,7 +2,7 @@
 #python chatProcessDb.py --pre-humanizar
 import sqlite3
 import re
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, Response, request, jsonify, render_template, stream_with_context
 from ollama import chat
 import os
 app = Flask(__name__)
@@ -136,14 +136,32 @@ def buscar_estado(estado: str):
             return row["mensagem"], row["link_tutorial"]
         return "Não entendi. Digite qualquer coisa para reiniciar.", None
     
+def converter_youtube_embeded(url: str):
+    if not url:
+        return None
+    
+    m = re.search(r"[?&]v=([^&]+)", url)
+    if m:
+        return f"https://www.youtube.com/embed/{m.group(1)}"
+    
+    m = re.search(r"youtu\.be/([^?&]+)", url)
+    if m:
+        return f"https://www.youtube.com/embed/{m.group(1)}"
+    return url
+
 def buscar_link_tutorial(nome_tutorial: str):
     if not nome_tutorial:
         return None
     with get_db() as conn:
         row = conn.execute(
-            "SELECT url FROM links WHERE nome_tutorial = ?", (nome_tutorial,)
+            "SELECT url FROM links WHERE nome_tutorial = ?",
+            (nome_tutorial,)
         ).fetchone()
-    return row["url"] if row else None
+
+    if not row:
+        return None
+    
+    return converter_youtube_embeded(row["url"])
 
 def buscar_proximo_estado(estado_atual: str, opcao: str):
     opcao_str = str(opcao)
@@ -452,21 +470,22 @@ def index():
 @app.route("/chatbot/chat", methods=["POST"])
 def chatbot():
     payload = request.get_json(silent=True) or {}
-    mensagem  = payload.get("mensagem", "").strip()
-    estado_atual  = payload.get("estado", "inicio")
-    dados_coleta  = payload.get("dados_coleta", {})
+
+    mensagem = payload.get("mensagem", "").strip()
+    estado = payload.get("estado", "inicio")
+    dados = payload.get("dados_coleta", {})
 
     if not mensagem:
         return jsonify({
             "resposta": "Mensagem vazia.",
-            "estado": estado_atual,
+            "estado": estado,
             "link_tutorial": None,
-            "dados_coleta": dados_coleta,
+            "dados_coleta": dados,
         })
 
-    resultado = processar_mensagem(mensagem, estado_atual, dados_coleta)
-    return jsonify(resultado)
+    resultado = processar_mensagem(mensagem, estado, dados)
 
+    return jsonify(resultado)
 
 if __name__ == "__main__":
     import sys

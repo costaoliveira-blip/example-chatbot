@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Estado da sessão — trafega entre frontend e backend 
+// Estado da sessão — trafega entre frontend e backend
 // ---------------------------------------------------------------------------
 let estadoAtual = "inicio";
 let dadosColeta = {};
@@ -18,14 +18,17 @@ function escapeHtml(texto) {
 
 function formatarMensagemBot(texto) {
     const seguro = escapeHtml(texto);
+
     const comLinks = seguro.replace(
         /(https?:\/\/[^\s<]+)/g,
         '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
+
     const comEstrelas = comLinks.replace(
         /⭐/g,
         '<span style="color: gold; font-size: 1.2em;">★</span>'
     );
+
     return comEstrelas.replace(/\n/g, "<br>");
 }
 
@@ -33,78 +36,167 @@ function formatarMensagemBot(texto) {
 // DOM helpers
 // ---------------------------------------------------------------------------
 function adicionarMensagem(remetente, texto, classe) {
+
     const chat = document.getElementById("chat");
-    const conteudo = classe === "bot-msg" ? formatarMensagemBot(texto) : escapeHtml(texto);
-    const msgHtml = `<div class="msg ${classe}"><strong>${remetente}</strong><br>${conteudo}</div>`;
-    chat.innerHTML += msgHtml;
+
+    const div = document.createElement("div");
+    div.className = `msg ${classe}`;
+
+    div.innerHTML = `
+        <strong>${remetente}</strong><br>
+        <span class="conteudo"></span>
+    `;
+
+    chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+
+    const conteudo = div.querySelector(".conteudo");
+
+    if (classe === "bot-msg") {
+        conteudo.innerHTML = formatarMensagemBot(texto);
+    } else {
+        conteudo.innerHTML = escapeHtml(texto);
+    }
+
+    return conteudo;
+}
+
+// ---------------------------------------------------------------------------
+// Efeito de digitação do bot
+// ---------------------------------------------------------------------------
+async function escreverMensagem(elemento, texto, velocidade = 16) {
+
+    let atual = "";
+
+    for (const letra of texto) {
+
+        atual += letra;
+
+        elemento.innerHTML = formatarMensagemBot(atual);
+
+        const chat = document.getElementById("chat");
+        chat.scrollTop = chat.scrollHeight;
+
+        await new Promise(resolve => setTimeout(resolve, velocidade));
+    }
 }
 
 function adicionarLinkTutorial(url) {
+
     if (!url) return;
+
     const chat = document.getElementById("chat");
+
     const msgHtml = `
         <div class="msg bot-msg tutorial-link">
             <strong>IPÊZINHO</strong><br>
-            🎬 <iframe src="${escapeHtml(url)}" width="400" height="250" title="teste de titulo">
+            <iframe
+                src="${escapeHtml(url)}"
+                width="500"
+                height="250"
+                title="Tutorial">
             </iframe>
-        </div>`;
+        </div>
+    `;
+
     chat.innerHTML += msgHtml;
     chat.scrollTop = chat.scrollHeight;
 }
 
+// ---------------------------------------------------------------------------
+// Envio de mensagens
+// ---------------------------------------------------------------------------
+async function enviar() {
 
-function enviar() {
-    const input  = document.getElementById("msg");
+    const input = document.getElementById("msg");
     const loader = document.querySelector(".loader");
-    const texto  = input.value.trim();
+
+    const texto = input.value.trim();
 
     if (!texto) return;
 
     input.value = "";
     input.disabled = true;
+
     loader.classList.add("active");
 
     adicionarMensagem("Você", texto, "user-msg");
 
-    fetch("/chatbot/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            mensagem: texto,
-            estado: estadoAtual,
-            dados_coleta: dadosColeta,
-        }),
-    })
-    .then(r => r.json())
-    .then(d => {
-        // Atualiza o estado da sessão
+    try {
+
+        const response = await fetch("/chatbot/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                mensagem: texto,
+                estado: estadoAtual,
+                dados_coleta: dadosColeta
+
+            })
+
+        });
+
+        const d = await response.json();
+
         estadoAtual = d.estado || "inicio";
         dadosColeta = d.dados_coleta || {};
 
-        // Exibe a resposta do bot
-        adicionarMensagem("IPÊZINHO", d.resposta || "Sem resposta no momento.", "bot-msg");
+        const elemento = adicionarMensagem(
+            "IPÊZINHO",
+            "",
+            "bot-msg"
+        );
 
-        // Exibe o link do tutorial se existir
+        await escreverMensagem(
+            elemento,
+            d.resposta || "Sem resposta no momento."
+        );
+
         if (d.link_tutorial) {
             adicionarLinkTutorial(d.link_tutorial);
         }
-    })
-    .catch(() => {
-        adicionarMensagem("IPÊZINHO", "Erro ao conectar com o servidor.", "bot-msg");
-    })
-    .finally(() => {
+
+    } catch (e) {
+
+        const elemento = adicionarMensagem(
+            "IPÊZINHO",
+            "",
+            "bot-msg"
+        );
+
+        await escreverMensagem(
+            elemento,
+            "Erro ao conectar com o servidor."
+        );
+
+    } finally {
+
         loader.classList.remove("active");
+
         input.disabled = false;
         input.focus();
-    });
+
+    }
 }
 
+// ---------------------------------------------------------------------------
+// Enter envia mensagem
+// ---------------------------------------------------------------------------
 document.getElementById("msg").addEventListener("keydown", function (event) {
+
     if (event.key === "Enter") {
+
         event.preventDefault();
         enviar();
+
     }
+
 });
 
 // ---------------------------------------------------------------------------
@@ -119,8 +211,10 @@ function fecharMenuAcessibilidade() {
 }
 
 function trocarTema() {
+
     const link = document.getElementById("theme");
     const atual = link.getAttribute("href");
+
     if (atual.includes("test.css")) {
         link.href = atual.replace("test.css", "test-contrast.css");
     } else {
@@ -129,7 +223,7 @@ function trocarTema() {
 }
 
 // ---------------------------------------------------------------------------
-// Mensagem de boas-vindas (dispara o primeiro estado automaticamente)
+// Mensagem inicial
 // ---------------------------------------------------------------------------
 adicionarMensagem(
     "IPÊZINHO",

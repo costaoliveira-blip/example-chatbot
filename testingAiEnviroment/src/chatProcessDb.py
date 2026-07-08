@@ -115,7 +115,7 @@ REGRAS OBRIGATÓRIAS:
 1. Preserve TODOS os links (URLs) exatamente como estão — nunca os modifique ou remova.
 2. Preserve TODOS os números de opções (ex: "1 - Algo", "2 - Outro", "0 - Voltar") exatamente como estão, incluindo a opção "0".
 3. Preserve instruções técnicas (nomes de campos, senhas, caminhos) sem alterar.
-4. Apenas reformule o tom: torne mais cordial, empático e natural.
+4. Apenas reformule o tom: torne mais cordial, empático e natural e mantenha a formalidade de um assistente institucional.
 5. Não adicione informações que não estão no texto original.
 6. Não encurte demais — mantenha todas as informações presentes.
 7. Responda APENAS com o texto reformulado, sem explicações, e sempre em português do Brasil (pt-br).

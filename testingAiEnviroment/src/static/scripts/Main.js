@@ -64,7 +64,7 @@ function adicionarMensagem(remetente, texto, classe) {
 // ---------------------------------------------------------------------------
 // Efeito de digitação do bot
 // ---------------------------------------------------------------------------
-async function escreverMensagem(elemento, texto, velocidade = 16) {
+async function escreverMensagem(elemento, texto, velocidade = 10) {
 
     let atual = "";
 

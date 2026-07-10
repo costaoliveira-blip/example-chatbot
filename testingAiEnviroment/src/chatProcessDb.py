@@ -1,5 +1,6 @@
 #rodar esse script antes de qualquer coisa
 #python chatProcessDb.py --pre-humanizar
+#link do video de exemplo do codigo: https://drive.google.com/file/d/1KlRv573pAMwURAcU7-AZzHeNhk_9LnCy/view?usp=drive_link
 import sqlite3
 import re
 from flask import Flask, Response, request, jsonify, render_template, stream_with_context

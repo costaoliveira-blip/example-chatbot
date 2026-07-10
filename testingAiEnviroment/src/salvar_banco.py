@@ -110,3 +110,18 @@ class DatabaseGerenciador:
 
         conn.commit()
         conn.close()
+
+
+    def update_mensagem_humanizada(self, estado: str, nova_mensagem: str):
+        conn = self._conectar()
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE estados SET mensagem_humanizada = ? WHERE estado = ?",
+            (nova_mensagem, estado)
+        )
+        conn.commit()
+        conn.close()
+
+    #TESTAR SE O UPDATE FUNCIONA, SE NAO FUNCIONAR, TENTAR A POSSIBILIDADE DE UM PROMPT MELHOR PARA CORREÇÃO DE ERROS AUTOMATICAS
+    #COMANDO A SER EXECUTADO PARA DAR UPDATE NO BANCO DE DADOS: python salvar_banco.py --update-mensagem-humanizada "estado" "nova_mensagem"
+    

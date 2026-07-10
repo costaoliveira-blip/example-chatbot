@@ -20,18 +20,17 @@ function formatarMensagemBot(texto) {
     const seguro = escapeHtml(texto);
 
     const comLinks = seguro.replace(
-        /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+         /(https?:\/\/[^\s<]+?)([.,!?;:)\]]?)(?=\s|$)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>$2'
     );
 
     const comEstrelas = comLinks.replace(
         /⭐/g,
-        '<span style="color: gold; font-size: 1.2em;">★</span>'
+        '<span style="color: gold; font-size:1.2em;">★</span>'
     );
 
-    return comEstrelas.replace(/\n/g, "<br>");
+    return comEstrelas.replace(/\n/g, "<br>")
 }
-
 // ---------------------------------------------------------------------------
 // DOM helpers
 // ---------------------------------------------------------------------------
@@ -216,9 +215,9 @@ function trocarTema() {
     const atual = link.getAttribute("href");
 
     if (atual.includes("test.css")) {
-        link.href = atual.replace("test.css", "test-contrast.css");
+        link.href = atual.replace("test.css", "altocontrast.css");
     } else {
-        link.href = atual.replace("test-contrast.css", "test.css");
+        link.href = atual.replace("altocontrast.css", "test.css");
     }
 }
 
